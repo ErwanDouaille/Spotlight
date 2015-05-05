@@ -39,6 +39,8 @@ int main(int argc, char* argv[])
 
 	
 	gt = new KinectGenerator("KinectTest"); 
+	gt->useCameraElevation();
+	gt->setCameraPosition(0,100,0);
 	if(myEnv->registerNode(gt))
 		printf("Register Kinect OK.\n");
 	else

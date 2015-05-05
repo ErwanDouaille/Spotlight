@@ -13,8 +13,8 @@ SpotlightProcessor::SpotlightProcessor(string name) : Processor(name)
 	_originScreenY = 0;
 
 	_ray = new Vector3f();
-	_posUser = new Eigen::Vector3f();
-	_orientationUser = new Eigen::Vector3f();
+	_posUser = new Vector3f();
+	_orientationUser = new Vector3f();
 
 }
 
@@ -73,12 +73,30 @@ bool SpotlightProcessor::update(map<string,Group3D*>& g3D, map<string,Group2D*>&
 
 			*_ray = Vector3f(rhp->getPosition().getX(), rhp->getPosition().getY(), rhp->getPosition().getZ()) 
 				- Vector3f(hp->getPosition().getX(), hp->getPosition().getY(), hp->getPosition().getZ());
+			_ray->normalize();
 			*_posUser = Vector3f(hp->getPosition().getX(), hp->getPosition().getY(), hp->getPosition().getZ());
 			*_orientationUser = Vector3f(hp->getOrientation().getX(), hp->getOrientation().getY(), hp->getOrientation().getZ());
+			_orientationUser->normalize();
 				
 			cout << "x:" << rhp->getPosition().getX() << "y:" << rhp->getPosition().getY() << "z:" << rhp->getPosition().getZ() << endl;
-	
 	}
 
 	return true;
 }
+
+Eigen::Vector3f* SpotlightProcessor::raycastVector()
+{
+	float step = _posUser->norm() / 2.;
+	Vector3f intersection = _posUser;
+
+	while (intersection.z() > 0.001)
+	{
+		if( (intersection+step * (*_ray)).z() < 0)
+		{
+			step /= 2.;
+		}
+
+		intersection += step * (*_ray);
+	}
+}
+

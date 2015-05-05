@@ -1,7 +1,8 @@
 #pragma once
 #include "LgProcessor.h"
-
 #include "Eigen\Geometry"
+
+#include <math.h>
 
 class SpotlightProcessor : public lg::Processor
 {
@@ -14,6 +15,8 @@ protected:
 
 	Eigen::Affine3f* _matrixToScreen;
 	Eigen::Affine3f* _matrixToWorld;
+
+	Eigen::Vector3f* raycastVector();
 
 public:
 	SpotlightProcessor(string);
@@ -30,6 +33,8 @@ public:
 
 	set<string> need() const; 
 	set<string> consume() const; 
-	set<string> produce() const; 
+	set<string> produce() const;
+
+
 };
 

@@ -66,7 +66,7 @@ bool KinectGenerator::start()
 		return false;
 	}
 
-	if (!initKinect()) return 1;
+	if (!initKinect()) return false;
 
 	WaitForSingleObject(h_skeleton, INFINITE);
 	return true;
@@ -97,6 +97,16 @@ bool KinectGenerator::initKinect() {
 	&rgbStream);*/
 	h_skeleton = CreateEvent(NULL, TRUE, FALSE, NULL);
 	sensor->NuiSkeletonTrackingEnable(h_skeleton, 0); // NUI_SKELETON_TRACKING_FLAG_ENABLE_SEATED_SUPPORT for only upper body
+	
+	if(_useElevation){
+		LONG temp = 0;
+		NuiCameraElevationGetAngle(&temp);
+		_roll = (float)temp;
+
+		//cout << "Temp " << temp << endl;
+		//cout << "Roll " << _roll << endl;
+	}
+
 	return sensor;
 }
 
@@ -107,7 +117,15 @@ bool KinectGenerator::generate(map<string,Group3D*>& g3D,map<string,Group2D*>& g
 	//cout << "Update Generator " << getName().c_str() << " with id " << getID() << " and type " << getType().c_str() << " at " << _timestamp << endl;
 
 	NUI_SKELETON_FRAME SkeletonFrame;
-	HRESULT hr = NuiSkeletonGetNextFrame(0, &SkeletonFrame);
+	HRESULT hr = NuiSkeletonGetNextFrame(100, &SkeletonFrame);
+
+	/*if(hr == S_OK )
+		cout << "Yeah"  << endl;
+	else
+		cout << "No new frame"  << endl;*/
+	if(hr != S_OK )
+		return false;
+
 	const NUI_TRANSFORM_SMOOTH_PARAMETERS DefaultParams = {0.5f, 0.1f, 0.5f, 0.1f, 0.1f};
 	NuiTransformSmooth(&SkeletonFrame, &DefaultParams);
 
@@ -142,7 +160,7 @@ bool KinectGenerator::generate(map<string,Group3D*>& g3D,map<string,Group2D*>& g
 
 	for(map<string,Group3D*>::iterator mit = g3D_copy.begin();mit != g3D_copy.end();mit++){
 
-		if(mit->second->getType() == "KINECT_SKELETON")
+		if(mit->second->getType() == _3DGroupType)
 		{
 			string groupID = mit->first;
 
@@ -157,7 +175,8 @@ bool KinectGenerator::generate(map<string,Group3D*>& g3D,map<string,Group2D*>& g
 			if(g3DCounts[groupID] >  500){
 				delete g3D[groupID];
 				g3D.erase(groupID);
-				cout << "*************deleted successfully*******"  << groupID << endl;
+				if(_environment->getVerboseLevel() != LG_ENV_VERBOSE_MUTE)
+					cout << "*************deleted successfully*******"  << groupID << endl;
 			}
 		}
 	}
@@ -174,51 +193,176 @@ bool KinectGenerator::generate(map<string,Group3D*>& g3D,map<string,Group2D*>& g
 			if (SkeletonFrame.SkeletonData[i].eTrackingState
 				== NUI_SKELETON_TRACKED)
 			{
-				cout << " Create/Update User: " << myID << endl;
+				if(_environment->getVerboseLevel() != LG_ENV_VERBOSE_MUTE)
+					cout << " Create/Update User: " << myID << endl;
+				
+				Vector4 jointPos;
+				long fx, fy;
+				USHORT fz;
 
 				// HEAD
-				Vector4 jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_HEAD];
-				updateData(_environment,g3D,myID,_3DGroupType ,"head",LG_ORIENTEDPOINT3D_HEAD,_timestamp,OrientedPoint3D(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z),Orientation3D(),1.0,0.0));
+				jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_HEAD];
+				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_HEAD))) updateData(_environment,g3D,myID,_3DGroupType ,"head",LG_ORIENTEDPOINT3D_HEAD,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),Orientation3D(),1.0,0.0));
+				if(_2DMode&&(isGenerated("LG_ORIENTEDPOINT2D_HEAD"))){
+					NuiTransformSkeletonToDepthImage(jointPos,&fx, &fy,&fz);
+					updateData(_environment,g2D,myID,"KINECTV1_MICROSOFTSDK1.8_SKELETON_PROJECTION","head","LG_ORIENTEDPOINT2D_HEAD",_timestamp,OrientedPoint2D(Point2D((int) (fx*2 ) / videoWidth,(int) (fy*2 )/ videoHeight),0.0,0.0,0.0));
+				}
+
+				cout << " Head " << getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)).getY() << endl;
 
 				// LEFT SHOULDER
 				jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_SHOULDER_LEFT];
-				updateData(_environment,g3D,myID,_3DGroupType ,"left_shoulder",LG_ORIENTEDPOINT3D_LEFT_SHOULDER,_timestamp,OrientedPoint3D(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z),Orientation3D(),1.0,0.0));
-				
+				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_LEFT_SHOULDER))) updateData(_environment,g3D,myID,_3DGroupType ,"left_shoulder",LG_ORIENTEDPOINT3D_LEFT_SHOULDER,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),Orientation3D(),1.0,0.0));
+				if(_2DMode&&(isGenerated("LG_ORIENTEDPOINT2D_LEFT_SHOULDER"))){
+					NuiTransformSkeletonToDepthImage(jointPos,&fx, &fy,&fz);
+					updateData(_environment,g2D,myID,"KINECTV1_MICROSOFTSDK1.8_SKELETON_PROJECTION","left_shoulder","LG_ORIENTEDPOINT2D_LEFT_SHOULDER",_timestamp,OrientedPoint2D(Point2D((int) (fx*2 ) / videoWidth,(int) (fy*2 )/ videoHeight),0.0,0.0,0.0));
+				}
+
 				// RIGHT SHOULDER
 				jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_SHOULDER_RIGHT];
-				updateData(_environment,g3D,myID,_3DGroupType ,"right_shoulder",LG_ORIENTEDPOINT3D_RIGHT_SHOULDER,_timestamp,OrientedPoint3D(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z),Orientation3D(),1.0,0.0));
+				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_RIGHT_SHOULDER))) updateData(_environment,g3D,myID,_3DGroupType ,"right_shoulder",LG_ORIENTEDPOINT3D_RIGHT_SHOULDER,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),Orientation3D(),1.0,0.0));
+				if(_2DMode&&(isGenerated("LG_ORIENTEDPOINT2D_RIGHT_SHOULDER"))){
+					NuiTransformSkeletonToDepthImage(jointPos,&fx, &fy,&fz);
+					updateData(_environment,g2D,myID,"KINECTV1_MICROSOFTSDK1.8_SKELETON_PROJECTION","right_shoulder","LG_ORIENTEDPOINT2D_RIGHT_SHOULDER",_timestamp,OrientedPoint2D(Point2D((int) (fx*2 ) / videoWidth,(int) (fy*2 )/ videoHeight),0.0,0.0,0.0));
+				}
 
 				// NECK
 				jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_SHOULDER_CENTER];
-				updateData(_environment,g3D,myID,_3DGroupType ,"neck",LG_ORIENTEDPOINT3D_NECK,_timestamp,OrientedPoint3D(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z),Orientation3D(),1.0,0.0));
+				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_NECK))) updateData(_environment,g3D,myID,_3DGroupType ,"neck",LG_ORIENTEDPOINT3D_NECK,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),Orientation3D(),1.0,0.0));
+				if(_2DMode&&(isGenerated("LG_ORIENTEDPOINT2D_NECK"))){
+					NuiTransformSkeletonToDepthImage(jointPos,&fx, &fy,&fz);
+					updateData(_environment,g2D,myID,"KINECTV1_MICROSOFTSDK1.8_SKELETON_PROJECTION","neck","LG_ORIENTEDPOINT2D_NECK",_timestamp,OrientedPoint2D(Point2D((int) (fx*2 ) / videoWidth,(int) (fy*2 )/ videoHeight),0.0,0.0,0.0));
+				}
 
 				// LEFT ELBOW
 				jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_ELBOW_LEFT];
-				updateData(_environment,g3D,myID,_3DGroupType ,"left_elbow",LG_ORIENTEDPOINT3D_LEFT_ELBOW,_timestamp,OrientedPoint3D(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z),Orientation3D(),1.0,0.0));
+				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_LEFT_ELBOW))) updateData(_environment,g3D,myID,_3DGroupType ,"left_elbow",LG_ORIENTEDPOINT3D_LEFT_ELBOW,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),Orientation3D(),1.0,0.0));
+				if(_2DMode&&(isGenerated("LG_ORIENTEDPOINT2D_LEFT_ELBOW"))){
+					NuiTransformSkeletonToDepthImage(jointPos,&fx, &fy,&fz);
+					updateData(_environment,g2D,myID,"KINECTV1_MICROSOFTSDK1.8_SKELETON_PROJECTION","left_elbow","LG_ORIENTEDPOINT2D_LEFT_ELBOW",_timestamp,OrientedPoint2D(Point2D((int) (fx*2 ) / videoWidth,(int) (fy*2 )/ videoHeight),0.0,0.0,0.0));
+				}
 
 				// RIGHT ELBOW
 				jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_ELBOW_RIGHT];
-				updateData(_environment,g3D,myID,_3DGroupType ,"right_elbow",LG_ORIENTEDPOINT3D_RIGHT_ELBOW,_timestamp,OrientedPoint3D(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z),Orientation3D(),1.0,0.0));
+				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_RIGHT_ELBOW))) updateData(_environment,g3D,myID,_3DGroupType ,"right_elbow",LG_ORIENTEDPOINT3D_RIGHT_ELBOW,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),Orientation3D(),1.0,0.0));
+				if(_2DMode&&(isGenerated("LG_ORIENTEDPOINT2D_RIGHT_ELBOW"))){
+					NuiTransformSkeletonToDepthImage(jointPos,&fx, &fy,&fz);
+					updateData(_environment,g2D,myID,"KINECTV1_MICROSOFTSDK1.8_SKELETON_PROJECTION","right_elbow","LG_ORIENTEDPOINT2D_RIGHT_ELBOW",_timestamp,OrientedPoint2D(Point2D((int) (fx*2 ) / videoWidth,(int) (fy*2 )/ videoHeight),0.0,0.0,0.0));
+				}
 
 				// LEFT WRIST
 				jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_WRIST_LEFT];
-				updateData(_environment,g3D,myID,_3DGroupType ,"left_wrist",LG_ORIENTEDPOINT3D_LEFT_WRIST,_timestamp,OrientedPoint3D(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z),Orientation3D(),1.0,0.0));
+				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_LEFT_WRIST))) updateData(_environment,g3D,myID,_3DGroupType ,"left_wrist",LG_ORIENTEDPOINT3D_LEFT_WRIST,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),Orientation3D(),1.0,0.0));
+				if(_2DMode&&(isGenerated("LG_ORIENTEDPOINT2D_LEFT_WRIST"))){
+					NuiTransformSkeletonToDepthImage(jointPos,&fx, &fy,&fz);
+					updateData(_environment,g2D,myID,"KINECTV1_MICROSOFTSDK1.8_SKELETON_PROJECTION","left_wrist","LG_ORIENTEDPOINT2D_LEFT_WRIST",_timestamp,OrientedPoint2D(Point2D((int) (fx*2 ) / videoWidth,(int) (fy*2 )/ videoHeight),0.0,0.0,0.0));
+				}
 
 				// RIGHT WRIST
 				jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_WRIST_RIGHT];
-				updateData(_environment,g3D,myID,_3DGroupType ,"right_wrist",LG_ORIENTEDPOINT3D_RIGHT_WRIST,_timestamp,OrientedPoint3D(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z),Orientation3D(),1.0,0.0));
+				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_RIGHT_WRIST))) updateData(_environment,g3D,myID,_3DGroupType ,"right_wrist",LG_ORIENTEDPOINT3D_RIGHT_WRIST,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),Orientation3D(),1.0,0.0));
+				if(_2DMode&&(isGenerated("LG_ORIENTEDPOINT2D_RIGHT_WRIST"))){
+					NuiTransformSkeletonToDepthImage(jointPos,&fx, &fy,&fz);
+					updateData(_environment,g2D,myID,"KINECTV1_MICROSOFTSDK1.8_SKELETON_PROJECTION","right_wrist","LG_ORIENTEDPOINT2D_RIGHT_WRIST",_timestamp,OrientedPoint2D(Point2D((int) (fx*2 ) / videoWidth,(int) (fy*2 )/ videoHeight),0.0,0.0,0.0));
+				}
 
 				// LEFT HAND
 				jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_HAND_LEFT];
-				updateData(_environment,g3D,myID,_3DGroupType ,"left_hand",LG_ORIENTEDPOINT3D_LEFT_HAND,_timestamp,OrientedPoint3D(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z),Orientation3D(),1.0,0.0));
+				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_LEFT_HAND))) updateData(_environment,g3D,myID,_3DGroupType ,"left_hand",LG_ORIENTEDPOINT3D_LEFT_HAND,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),Orientation3D(),1.0,0.0));
+				if(_2DMode&&(isGenerated("LG_ORIENTEDPOINT2D_LEFT_HAND"))){
+					NuiTransformSkeletonToDepthImage(jointPos,&fx, &fy,&fz);
+					updateData(_environment,g2D,myID,"KINECTV1_MICROSOFTSDK1.8_SKELETON_PROJECTION","left_hand","LG_ORIENTEDPOINT2D_LEFT_HAND",_timestamp,OrientedPoint2D(Point2D((int) (fx*2 ) / videoWidth,(int) (fy*2 )/ videoHeight),0.0,0.0,0.0));
+				}
 
 				// RIGHT HAND
 				jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_HAND_RIGHT];
-				updateData(_environment,g3D,myID,_3DGroupType ,"right_hand",LG_ORIENTEDPOINT3D_RIGHT_HAND,_timestamp,OrientedPoint3D(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z),Orientation3D(),1.0,0.0));
+				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_RIGHT_HAND))) updateData(_environment,g3D,myID,_3DGroupType ,"right_hand",LG_ORIENTEDPOINT3D_RIGHT_HAND,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),Orientation3D(),1.0,0.0));
+				if(_2DMode&&(isGenerated("LG_ORIENTEDPOINT2D_RIGHT_HAND"))){
+					NuiTransformSkeletonToDepthImage(jointPos,&fx, &fy,&fz);
+					updateData(_environment,g2D,myID,"KINECTV1_MICROSOFTSDK1.8_SKELETON_PROJECTION","right_hand","LG_ORIENTEDPOINT2D_RIGHT_HAND",_timestamp,OrientedPoint2D(Point2D((int) (fx*2 ) / videoWidth,(int) (fy*2 )/ videoHeight),0.0,0.0,0.0));
+				}
 
 				// TORSO
 				jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_SPINE];
-				updateData(_environment,g3D,myID,_3DGroupType ,"torso",LG_ORIENTEDPOINT3D_TORSO,_timestamp,OrientedPoint3D(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z),Orientation3D(),1.0,0.0));
+				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_TORSO))) updateData(_environment,g3D,myID,_3DGroupType ,"torso",LG_ORIENTEDPOINT3D_TORSO,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),Orientation3D(),1.0,0.0));
+				if(_2DMode&&(isGenerated("LG_ORIENTEDPOINT2D_TORSO"))){
+					NuiTransformSkeletonToDepthImage(jointPos,&fx, &fy,&fz);
+					updateData(_environment,g2D,myID,"KINECTV1_MICROSOFTSDK1.8_SKELETON_PROJECTION","torso","LG_ORIENTEDPOINT2D_TORSO",_timestamp,OrientedPoint2D(Point2D((int) (fx*2 ) / videoWidth,(int) (fy*2 )/ videoHeight),0.0,0.0,0.0));
+				}
+
+				// LEFT ANKLE 
+				jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_ANKLE_LEFT];
+				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_LEFT_ANKLE))) updateData(_environment,g3D,myID,_3DGroupType ,"left_ankle",LG_ORIENTEDPOINT3D_LEFT_ANKLE,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),Orientation3D(),1.0,0.0));
+				if(_2DMode&&(isGenerated("LG_ORIENTEDPOINT2D_LEFT_ANKLE"))){
+					NuiTransformSkeletonToDepthImage(jointPos,&fx, &fy,&fz);
+					updateData(_environment,g2D,myID,"KINECTV1_MICROSOFTSDK1.8_SKELETON_PROJECTION","left_ankle","LG_ORIENTEDPOINT2D_LEFT_ANKLE",_timestamp,OrientedPoint2D(Point2D((int) (fx*2 ) / videoWidth,(int) (fy*2 )/ videoHeight),0.0,0.0,0.0));
+				}
+
+				// RIGHT ANKLE
+				jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_ANKLE_RIGHT];
+				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_RIGHT_ANKLE))) updateData(_environment,g3D,myID,_3DGroupType ,"right_ankle",LG_ORIENTEDPOINT3D_RIGHT_ANKLE,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),Orientation3D(),1.0,0.0));
+				if(_2DMode&&(isGenerated("LG_ORIENTEDPOINT2D_RIGHT_ANKLE"))){
+					NuiTransformSkeletonToDepthImage(jointPos,&fx, &fy,&fz);
+					updateData(_environment,g2D,myID,"KINECTV1_MICROSOFTSDK1.8_SKELETON_PROJECTION","right_ankle","LG_ORIENTEDPOINT2D_RIGHT_ANKLE",_timestamp,OrientedPoint2D(Point2D((int) (fx*2 ) / videoWidth,(int) (fy*2 )/ videoHeight),0.0,0.0,0.0));
+				}
+
+				// LEFT FOOT
+				jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_FOOT_LEFT];
+				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_LEFT_FOOT))) updateData(_environment,g3D,myID,_3DGroupType ,"left_foot",LG_ORIENTEDPOINT3D_LEFT_FOOT,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),Orientation3D(),1.0,0.0));
+				if(_2DMode&&(isGenerated("LG_ORIENTEDPOINT2D_LEFT_FOOT"))){
+					NuiTransformSkeletonToDepthImage(jointPos,&fx, &fy,&fz);
+					updateData(_environment,g2D,myID,"KINECTV1_MICROSOFTSDK1.8_SKELETON_PROJECTION","left_foot","LG_ORIENTEDPOINT2D_LEFT_FOOT",_timestamp,OrientedPoint2D(Point2D((int) (fx*2 ) / videoWidth,(int) (fy*2 )/ videoHeight),0.0,0.0,0.0));
+				}
+
+				// RIGHT FOOT
+				jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_FOOT_RIGHT];
+				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_RIGHT_FOOT))) updateData(_environment,g3D,myID,_3DGroupType ,"right_foot",LG_ORIENTEDPOINT3D_RIGHT_FOOT,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),Orientation3D(),1.0,0.0));
+				if(_2DMode&&(isGenerated("LG_ORIENTEDPOINT2D_RIGHT_FOOT"))){
+					NuiTransformSkeletonToDepthImage(jointPos,&fx, &fy,&fz);
+					updateData(_environment,g2D,myID,"KINECTV1_MICROSOFTSDK1.8_SKELETON_PROJECTION","right_foot","LG_ORIENTEDPOINT2D_RIGHT_FOOT",_timestamp,OrientedPoint2D(Point2D((int) (fx*2 ) / videoWidth,(int) (fy*2 )/ videoHeight),0.0,0.0,0.0));
+				}
+
+				// STOMACH/HIP CENTER
+				jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_HIP_CENTER];
+				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_STOMACH))) updateData(_environment,g3D,myID,_3DGroupType ,"stomach",LG_ORIENTEDPOINT3D_STOMACH,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),Orientation3D(),1.0,0.0));
+				if(_2DMode&&(isGenerated("LG_ORIENTEDPOINT2D_STOMACH"))){
+					NuiTransformSkeletonToDepthImage(jointPos,&fx, &fy,&fz);
+					updateData(_environment,g2D,myID,"KINECTV1_MICROSOFTSDK1.8_SKELETON_PROJECTION","stomach","LG_ORIENTEDPOINT2D_STOMACH",_timestamp,OrientedPoint2D(Point2D((int) (fx*2 ) / videoWidth,(int) (fy*2 )/ videoHeight),0.0,0.0,0.0));
+				}
+
+				// LEFT HIP
+				jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_HIP_LEFT];
+				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_LEFT_HIP))) updateData(_environment,g3D,myID,_3DGroupType ,"left_hip",LG_ORIENTEDPOINT3D_LEFT_HIP,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),Orientation3D(),1.0,0.0));
+				if(_2DMode&&(isGenerated("LG_ORIENTEDPOINT2D_LEFT_HIP"))){
+					NuiTransformSkeletonToDepthImage(jointPos,&fx, &fy,&fz);
+					updateData(_environment,g2D,myID,"KINECTV1_MICROSOFTSDK1.8_SKELETON_PROJECTION","left_hip","LG_ORIENTEDPOINT2D_LEFT_HIP",_timestamp,OrientedPoint2D(Point2D((int) (fx*2 ) / videoWidth,(int) (fy*2 )/ videoHeight),0.0,0.0,0.0));
+				}
+
+				// RIGHT HIP
+				jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_HIP_RIGHT];
+				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_RIGHT_HIP))) updateData(_environment,g3D,myID,_3DGroupType ,"right_hip",LG_ORIENTEDPOINT3D_RIGHT_HIP,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),Orientation3D(),1.0,0.0));
+				if(_2DMode&&(isGenerated("LG_ORIENTEDPOINT2D_RIGHT_HIP"))){
+					NuiTransformSkeletonToDepthImage(jointPos,&fx, &fy,&fz);
+					updateData(_environment,g2D,myID,"KINECTV1_MICROSOFTSDK1.8_SKELETON_PROJECTION","right_hip","LG_ORIENTEDPOINT2D_RIGHT_HIP",_timestamp,OrientedPoint2D(Point2D((int) (fx*2 ) / videoWidth,(int) (fy*2 )/ videoHeight),0.0,0.0,0.0));
+				}
+
+				// LEFT KNEE
+				jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_KNEE_LEFT];
+				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_LEFT_KNEE))) updateData(_environment,g3D,myID,_3DGroupType ,"left_knee",LG_ORIENTEDPOINT3D_LEFT_KNEE,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),Orientation3D(),1.0,0.0));
+				if(_2DMode&&(isGenerated("LG_ORIENTEDPOINT2D_LEFT_KNEE"))){
+					NuiTransformSkeletonToDepthImage(jointPos,&fx, &fy,&fz);
+					updateData(_environment,g2D,myID,"KINECTV1_MICROSOFTSDK1.8_SKELETON_PROJECTION","left_knee","LG_ORIENTEDPOINT2D_LEFT_KNEE",_timestamp,OrientedPoint2D(Point2D((int) (fx*2 ) / videoWidth,(int) (fy*2 )/ videoHeight),0.0,0.0,0.0));
+				}
+
+				// RIGHT KNEE
+				jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_KNEE_RIGHT];
+				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_RIGHT_KNEE))) updateData(_environment,g3D,myID,_3DGroupType ,"right_knee",LG_ORIENTEDPOINT3D_RIGHT_KNEE,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),Orientation3D(),1.0,0.0));
+				if(_2DMode&&(isGenerated("LG_ORIENTEDPOINT2D_RIGHT_KNEE"))){
+					NuiTransformSkeletonToDepthImage(jointPos,&fx, &fy,&fz);
+					updateData(_environment,g2D,myID,"KINECTV1_MICROSOFTSDK1.8_SKELETON_PROJECTION","right_knee","LG_ORIENTEDPOINT2D_RIGHT_KNEE",_timestamp,OrientedPoint2D(Point2D((int) (fx*2 ) / videoWidth,(int) (fy*2 )/ videoHeight),0.0,0.0,0.0));
+				}
+
+				g3DCounts[myID] = 0;
 
 				/*if(g3D.count(myID) ==0){
 
@@ -400,7 +544,8 @@ bool KinectGenerator::generate(map<string,Group3D*>& g3D,map<string,Group2D*>& g
 
 bool KinectGenerator::stop()
 {
-	cout << "Stop Generator" << endl;
+	if(_environment->getVerboseLevel() != LG_ENV_VERBOSE_MUTE)
+		cout << "Stop Generator" << endl;
 
 	return true;
 }
@@ -408,33 +553,73 @@ bool KinectGenerator::stop()
 set<string> KinectGenerator::produce() const
 {
 	set<string> produce;
-	produce.insert(LG_ORIENTEDPOINT3D_HEAD);
-	produce.insert(LG_ORIENTEDPOINT3D_LEFT_ELBOW);
-	produce.insert(LG_ORIENTEDPOINT3D_LEFT_WRIST);
-	produce.insert(LG_ORIENTEDPOINT3D_LEFT_HAND);
-	produce.insert(LG_ORIENTEDPOINT3D_LEFT_SHOULDER);
-	produce.insert(LG_ORIENTEDPOINT3D_NECK);
-	produce.insert(LG_ORIENTEDPOINT3D_RIGHT_ELBOW);
-	produce.insert(LG_ORIENTEDPOINT3D_RIGHT_HAND);
-	produce.insert(LG_ORIENTEDPOINT3D_RIGHT_SHOULDER);
-	produce.insert(LG_ORIENTEDPOINT3D_RIGHT_WRIST);
-	produce.insert(LG_ORIENTEDPOINT3D_TORSO);
+	
+	if(_3DMode){
+		if(isGenerated(LG_ORIENTEDPOINT3D_HEAD)) produce.insert(LG_ORIENTEDPOINT3D_HEAD);
+		if(isGenerated(LG_ORIENTEDPOINT3D_LEFT_ELBOW)) produce.insert(LG_ORIENTEDPOINT3D_LEFT_ELBOW);
+		if(isGenerated(LG_ORIENTEDPOINT3D_LEFT_WRIST)) produce.insert(LG_ORIENTEDPOINT3D_LEFT_WRIST);
+		if(isGenerated(LG_ORIENTEDPOINT3D_LEFT_HAND)) produce.insert(LG_ORIENTEDPOINT3D_LEFT_HAND);
+		if(isGenerated(LG_ORIENTEDPOINT3D_LEFT_SHOULDER)) produce.insert(LG_ORIENTEDPOINT3D_LEFT_SHOULDER);
+		if(isGenerated(LG_ORIENTEDPOINT3D_NECK)) produce.insert(LG_ORIENTEDPOINT3D_NECK);
+		if(isGenerated(LG_ORIENTEDPOINT3D_RIGHT_ELBOW)) produce.insert(LG_ORIENTEDPOINT3D_RIGHT_ELBOW);
+		if(isGenerated(LG_ORIENTEDPOINT3D_RIGHT_HAND)) produce.insert(LG_ORIENTEDPOINT3D_RIGHT_HAND);
+		if(isGenerated(LG_ORIENTEDPOINT3D_RIGHT_SHOULDER)) produce.insert(LG_ORIENTEDPOINT3D_RIGHT_SHOULDER);
+		if(isGenerated(LG_ORIENTEDPOINT3D_RIGHT_WRIST)) produce.insert(LG_ORIENTEDPOINT3D_RIGHT_WRIST);
+		if(isGenerated(LG_ORIENTEDPOINT3D_TORSO)) produce.insert(LG_ORIENTEDPOINT3D_TORSO);
+		if(isGenerated(LG_ORIENTEDPOINT3D_LEFT_ANKLE)) produce.insert(LG_ORIENTEDPOINT3D_LEFT_ANKLE);
+		if(isGenerated(LG_ORIENTEDPOINT3D_RIGHT_ANKLE)) produce.insert(LG_ORIENTEDPOINT3D_RIGHT_ANKLE);
+		if(isGenerated(LG_ORIENTEDPOINT3D_LEFT_FOOT)) produce.insert(LG_ORIENTEDPOINT3D_LEFT_FOOT);
+		if(isGenerated(LG_ORIENTEDPOINT3D_RIGHT_FOOT)) produce.insert(LG_ORIENTEDPOINT3D_RIGHT_FOOT);
+		if(isGenerated(LG_ORIENTEDPOINT3D_STOMACH)) produce.insert(LG_ORIENTEDPOINT3D_STOMACH);
+		if(isGenerated(LG_ORIENTEDPOINT3D_LEFT_HIP)) produce.insert(LG_ORIENTEDPOINT3D_LEFT_HIP);
+		if(isGenerated(LG_ORIENTEDPOINT3D_RIGHT_HIP)) produce.insert(LG_ORIENTEDPOINT3D_RIGHT_HIP);
+		if(isGenerated(LG_ORIENTEDPOINT3D_LEFT_KNEE)) produce.insert(LG_ORIENTEDPOINT3D_LEFT_KNEE);
+		if(isGenerated(LG_ORIENTEDPOINT3D_RIGHT_KNEE)) produce.insert(LG_ORIENTEDPOINT3D_RIGHT_KNEE);
+	}
 
-	produce.insert("HEAD");
-	produce.insert("LEFT_ELBOW");
-	produce.insert("LEFT_WRIST");
-	produce.insert("LEFT_HAND");
-	produce.insert("LEFT_SHOULDER");
-	produce.insert("NECK");
-	produce.insert("RIGHT_ELBOW");
-	produce.insert("RIGHT_HAND");
-	produce.insert("RIGHT_SHOULDER");
-	produce.insert("RIGHT_WRIST");
-	produce.insert("TORSO");
+	
+	if(_2DMode){
+		if(isGenerated("LG_ORIENTEDPOINT2D_HEAD")) produce.insert("LG_ORIENTEDPOINT2D_HEAD");
+		if(isGenerated("LG_ORIENTEDPOINT2D_LEFT_ELBOW")) produce.insert("LG_ORIENTEDPOINT2D_LEFT_ELBOW");
+		if(isGenerated("LG_ORIENTEDPOINT2D_LEFT_WRIST")) produce.insert("LG_ORIENTEDPOINT2D_LEFT_WRIST");
+		if(isGenerated("LG_ORIENTEDPOINT2D_LEFT_HAND")) produce.insert("LG_ORIENTEDPOINT2D_LEFT_HAND");
+		if(isGenerated("LG_ORIENTEDPOINT2D_LEFT_SHOULDER")) produce.insert("LG_ORIENTEDPOINT2D_LEFT_SHOULDER");
+		if(isGenerated("LG_ORIENTEDPOINT2D_NECK")) produce.insert("LG_ORIENTEDPOINT2D_NECK");
+		if(isGenerated("LG_ORIENTEDPOINT2D_RIGHT_ELBOW")) produce.insert("LG_ORIENTEDPOINT2D_RIGHT_ELBOW");
+		if(isGenerated("LG_ORIENTEDPOINT2D_RIGHT_HAND")) produce.insert("LG_ORIENTEDPOINT2D_RIGHT_HAND");
+		if(isGenerated("LG_ORIENTEDPOINT2D_RIGHT_SHOULDER")) produce.insert("LG_ORIENTEDPOINT2D_RIGHT_SHOULDER");
+		if(isGenerated("LG_ORIENTEDPOINT2D_RIGHT_WRIST")) produce.insert("LG_ORIENTEDPOINT2D_RIGHT_WRIST");
+		if(isGenerated("LG_ORIENTEDPOINT2D_TORSO")) produce.insert("LG_ORIENTEDPOINT2D_TORSO");
+		if(isGenerated("LG_ORIENTEDPOINT2D_LEFT_ANKLE")) produce.insert("LG_ORIENTEDPOINT2D_LEFT_ANKLE");
+		if(isGenerated("LG_ORIENTEDPOINT2D_RIGHT_ANKLE")) produce.insert("LG_ORIENTEDPOINT2D_RIGHT_ANKLE");
+		if(isGenerated("LG_ORIENTEDPOINT2D_LEFT_FOOT")) produce.insert("LG_ORIENTEDPOINT2D_LEFT_FOOT");
+		if(isGenerated("LG_ORIENTEDPOINT2D_RIGHT_FOOT")) produce.insert("LG_ORIENTEDPOINT2D_RIGHT_FOOT");
+		if(isGenerated("LG_ORIENTEDPOINT2D_STOMACH")) produce.insert("LG_ORIENTEDPOINT2D_STOMACH");
+		if(isGenerated("LG_ORIENTEDPOINT2D_LEFT_HIP")) produce.insert("LG_ORIENTEDPOINT2D_LEFT_HIP");
+		if(isGenerated("LG_ORIENTEDPOINT2D_RIGHT_HIP")) produce.insert("LG_ORIENTEDPOINT2D_RIGHT_HIP");
+		if(isGenerated("LG_ORIENTEDPOINT2D_LEFT_KNEE")) produce.insert("LG_ORIENTEDPOINT2D_LEFT_KNEE");
+		if(isGenerated("LG_ORIENTEDPOINT2D_RIGHT_KNEE")) produce.insert("LG_ORIENTEDPOINT2D_RIGHT_KNEE");
+	}
+
 
 	return produce;
 }
 
 KinectGenerator::~KinectGenerator(void)
 {
+}
+
+
+Point3D KinectGenerator::getRepositionedPoint(Point3D old){
+	Point3D newPos;
+
+	newPos.setX(_xPosition+old.getX());
+	newPos.setY(_yPosition+(old.getY()*cos(-_roll*M_PI/180))-(old.getZ()*sin(-_roll*M_PI/180)));
+	newPos.setZ(_zPosition+(old.getY()*sin(-_roll*M_PI/180))+(old.getZ()*cos(-_roll*M_PI/180)));
+
+	return newPos;
+}
+
+void KinectGenerator::useCameraElevation(){
+	_useElevation = true;
 }

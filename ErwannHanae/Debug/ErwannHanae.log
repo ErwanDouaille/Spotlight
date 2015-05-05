@@ -1,17 +1,17 @@
-﻿La génération a démarré 05/05/2015 15:02:16.
-     1>Projet "C:\Users\douaille\Desktop\ErwannHanae\ErwannHanae\ErwannHanae.vcxproj" sur le nœud 2 (build cible(s)).
+﻿La génération a démarré 05/05/2015 16:09:43.
+     1>Projet "C:\Users\douaille\Spotlight\ErwannHanae\ErwannHanae.vcxproj" sur le nœud 2 (build cible(s)).
      1>InitializeBuildStatus:
          Création de "Debug\ErwannHanae.unsuccessfulbuild", car "AlwaysCreate" a été spécifié.
        ClCompile:
          Toutes les sorties sont à jour.
        Link:
          Toutes les sorties sont à jour.
-         ErwannHanae.vcxproj -> C:\Users\douaille\Desktop\ErwannHanae\Debug\ErwannHanae.exe
+         ErwannHanae.vcxproj -> C:\Users\douaille\Spotlight\Debug\ErwannHanae.exe
        FinalizeBuildStatus:
          Suppression du fichier "Debug\ErwannHanae.unsuccessfulbuild".
          Mise à jour de l'horodatage "Debug\ErwannHanae.lastbuildstate".
-     1>Génération du projet "C:\Users\douaille\Desktop\ErwannHanae\ErwannHanae\ErwannHanae.vcxproj" terminée (build cible(s)).
+     1>Génération du projet "C:\Users\douaille\Spotlight\ErwannHanae\ErwannHanae.vcxproj" terminée (build cible(s)).
 
 La génération a réussi.
 
-Temps écoulé 00:00:00.04
+Temps écoulé 00:00:00.05

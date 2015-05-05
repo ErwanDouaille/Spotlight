@@ -1,5 +1,7 @@
 #pragma once
 
+#define _USE_MATH_DEFINES
+
 #include "LgGenerator.h"
 
 #include <Windows.h>
@@ -9,6 +11,7 @@
 #include <NuiImageCamera.h>
 #include <NuiSensor.h>
 #include <string.h>
+#include <math.h>
 
 using namespace lg;
 
@@ -89,6 +92,17 @@ private:
 	//! Frequency of updates
 	int _frequency;
 
+	//! Enable the use of the motor elevation
+	bool _useElevation;
+
+	/*!
+	* \brief Rotate and translate the point according to stored data
+	* \param[in] Point3D : point3D in Kinect coordinates
+	* \return a Point3D in global coordinates
+	*/
+	Point3D getRepositionedPoint(Point3D);
+
+
 public:
 	KinectGenerator(string name);
 	~KinectGenerator(void);
@@ -116,7 +130,7 @@ public:
 	*/
 	bool stop();
 
-		/*!
+	/*!
 	* \brief Generate Groups and data from the device
 	* Do not generate 1D and Switch.
 	* \param[in] groups3D : Groups of HOrientedPoint3D (Skeletons/Users)
@@ -169,6 +183,11 @@ public:
 	*/
 	void setCameraOrientation(float pitch, float roll, float yaw) {_pitch = pitch;_roll = roll;_yaw = yaw;}
 	
+	/*!
+	* \brief Store the camera elevation in the roll data
+	*/
+	void useCameraElevation() ;
+
 	/*!
 	* \brief Get the applied rotation on the X axis (pitch)
 	* \return Pitch
@@ -337,4 +356,5 @@ public:
 	* \return The update frequency
 	*/
 	int getFrequency() {return _frequency;}
+
 };
