@@ -9,13 +9,11 @@ SpotlightProcessor::SpotlightProcessor(string name) : Processor(name)
 	_height = 2000;
 	_width = 4000;
 
-	_originScreenX = 0;
-	_originScreenY = 0;
-
 	_ray = new Vector3f();
 	_posUser = new Vector3f();
 	_orientationUser = new Vector3f();
-
+	_screenNormal = new Vector3f(0,0,1);
+	_screenOrigin = new Vector3f(0,0,0);
 }
 
 SpotlightProcessor::~SpotlightProcessor(void)
@@ -62,41 +60,38 @@ bool SpotlightProcessor::update(map<string,Group3D*>& g3D, map<string,Group2D*>&
 
 	for(map<string,Group3D*>::iterator mit = g3D.begin();mit != g3D.end();mit++){
 		//cout << " 3D Groups " << mit->first.c_str() << endl;
-		set<HOrientedPoint3D*> rhands = mit->second->getElementsByType(LG_ORIENTEDPOINT3D_RIGHT_HAND);
-		set<HOrientedPoint3D*> head = mit->second->getElementsByType(LG_ORIENTEDPOINT3D_HEAD);
-		
-			HOrientedPoint3D* rh = *rhands.begin();
-			OrientedPoint3D* rhp = rh->getLast();
+		set<HOrientedPoint3D*> rhand = mit->second->getElementsByType("TRANSLATE_HEAD");
+		set<HOrientedPoint3D*> head = mit->second->getElementsByType("TRANSLATE_RIGHT_HAND");
 
+		if(rhand.size() > 0  && head.size() > 0 ) {
+			HOrientedPoint3D* rh = *rhand.begin();
 			HOrientedPoint3D* h = *head.begin();
-			OrientedPoint3D* hp = h->getLast();
+			if(h && rh){
+				OrientedPoint3D* rhp = rh->getLast();
+				OrientedPoint3D* hp = h->getLast();
+				*_ray = Vector3f(rhp->getPosition().getX(), rhp->getPosition().getY(), rhp->getPosition().getZ()) 
+					- Vector3f(hp->getPosition().getX(), hp->getPosition().getY(), hp->getPosition().getZ());
+				_ray->normalize();
+				*_posUser = Vector3f(hp->getPosition().getX(), hp->getPosition().getY(), hp->getPosition().getZ());
+				*_orientationUser = Vector3f(hp->getOrientation().getX(), hp->getOrientation().getY(), hp->getOrientation().getZ());
+				_orientationUser->normalize();
 
-			*_ray = Vector3f(rhp->getPosition().getX(), rhp->getPosition().getY(), rhp->getPosition().getZ()) 
-				- Vector3f(hp->getPosition().getX(), hp->getPosition().getY(), hp->getPosition().getZ());
-			_ray->normalize();
-			*_posUser = Vector3f(hp->getPosition().getX(), hp->getPosition().getY(), hp->getPosition().getZ());
-			*_orientationUser = Vector3f(hp->getOrientation().getX(), hp->getOrientation().getY(), hp->getOrientation().getZ());
-			_orientationUser->normalize();
-				
-			cout << "x:" << rhp->getPosition().getX() << "y:" << rhp->getPosition().getY() << "z:" << rhp->getPosition().getZ() << endl;
+				cout << "x:" << rhp->getPosition().getX() << "y:" << rhp->getPosition().getY() << "z:" << rhp->getPosition().getZ() << endl;
+				_raycastIntersection = this->raycastVector();
+				updateData(_environment,g2D, "RAYCAST","RAYCAST","_raycastIntersection","RAYCAST",_timestamp,OrientedPoint2D(Point2D(_raycastIntersection->x(),_raycastIntersection->y()),0.0,1.0,0.0));
+			}
+		}
 	}
-
 	return true;
 }
 
 Eigen::Vector3f* SpotlightProcessor::raycastVector()
 {
-	float step = _posUser->norm() / 2.;
-	Vector3f intersection = _posUser;
-
-	while (intersection.z() > 0.001)
-	{
-		if( (intersection+step * (*_ray)).z() < 0)
-		{
-			step /= 2.;
-		}
-
-		intersection += step * (*_ray);
-	}
+	float T =0.0, d = 0.0;
+	d = -((*_screenNormal).dot(*_screenOrigin));
+	T = -((*_screenNormal).dot((*_posUser))+d)/((*_screenNormal).dot(*_ray));
+	return new Vector3f(_posUser->x() + _ray->x()*T,
+		_posUser->y() + _ray->y()*T,
+		_posUser->z() + _ray->z()*T);
 }
 

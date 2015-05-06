@@ -208,8 +208,6 @@ bool KinectGenerator::generate(map<string,Group3D*>& g3D,map<string,Group2D*>& g
 					updateData(_environment,g2D,myID,"KINECTV1_MICROSOFTSDK1.8_SKELETON_PROJECTION","head","LG_ORIENTEDPOINT2D_HEAD",_timestamp,OrientedPoint2D(Point2D((int) (fx*2 ) / videoWidth,(int) (fy*2 )/ videoHeight),0.0,0.0,0.0));
 				}
 
-				cout << " Head " << getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)).getY() << endl;
-
 				// LEFT SHOULDER
 				jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_SHOULDER_LEFT];
 				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_LEFT_SHOULDER))) updateData(_environment,g3D,myID,_3DGroupType ,"left_shoulder",LG_ORIENTEDPOINT3D_LEFT_SHOULDER,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),Orientation3D(),1.0,0.0));

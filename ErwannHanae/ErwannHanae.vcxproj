@@ -80,6 +80,7 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DataTranslatorKinect.h" />
     <ClInclude Include="KinectGenerator.h" />
     <ClInclude Include="MonoUserFilter.h" />
     <ClInclude Include="OSCSender.h" />
@@ -87,6 +88,7 @@
     <ClInclude Include="SpotlightProcessor.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DataTranslatorKinect.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="KinectGenerator.cpp" />
     <ClCompile Include="MonoUserFilter.cpp" />

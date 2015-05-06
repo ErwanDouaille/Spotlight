@@ -1,12 +1,34 @@
-﻿La génération a démarré 05/05/2015 16:09:43.
+﻿La génération a démarré 06/05/2015 15:47:00.
      1>Projet "C:\Users\douaille\Spotlight\ErwannHanae\ErwannHanae.vcxproj" sur le nœud 2 (build cible(s)).
      1>InitializeBuildStatus:
          Création de "Debug\ErwannHanae.unsuccessfulbuild", car "AlwaysCreate" a été spécifié.
        ClCompile:
-         Toutes les sorties sont à jour.
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I../include /I"C:\Program Files\Microsoft SDKs\Kinect\Developer Toolkit v1.8.0\inc" /I"C:\Program Files\Microsoft SDKs\Kinect\v1.8\inc" /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt DataTranslatorKinect.cpp
+         DataTranslatorKinect.cpp
+     1>c:\users\douaille\spotlight\erwannhanae\datatranslatorkinect.cpp(73): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
+     1>c:\users\douaille\spotlight\erwannhanae\datatranslatorkinect.cpp(78): warning C4244: 'argument' : conversion de 'double' en 'const float', perte possible de données
+     1>c:\users\douaille\spotlight\erwannhanae\datatranslatorkinect.cpp(78): warning C4244: 'argument' : conversion de 'double' en 'const float', perte possible de données
        Link:
-         Toutes les sorties sont à jour.
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\douaille\Spotlight\Debug\ErwannHanae.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:"C:\Program Files\Microsoft SDKs\Kinect\Developer Toolkit v1.8.0\Lib\x86" /LIBPATH:../lib /LIBPATH:"C:\Program Files\Microsoft SDKs\Kinect\v1.8\lib\x86" libGina0.2.lib pthreadVC2.lib liblo.lib winmm.lib wsock32.lib kinect10.lib ws2_32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\ErwannHanae.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\douaille\Spotlight\Debug\ErwannHanae.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\douaille\Spotlight\Debug\ErwannHanae.lib" /MACHINE:X86 Debug\DataTranslatorKinect.obj
+         Debug\main.obj
+         Debug\KinectGenerator.obj
+         Debug\MonoUserFilter.obj
+         Debug\OSCSender.obj
+         Debug\PoseObserver.obj
+         Debug\SpotlightProcessor.obj
+     1>DataTranslatorKinect.obj : warning LNK4075: ' /EDITANDCONTINUE' ignoré à cause de la spécification '/INCREMENTAL:NO'
+     1>LINK : warning LNK4098: conflit entre la bibliothèque par défaut 'MSVCRT' et les autres bibliothèques ; utilisez /NODEFAULTLIB:library
+     1>libGina0.2.lib(LgFunctions.obj) : warning LNK4099: PDB 'vc100.pdb' n'a pu être trouvé avec 'libGina0.2.lib(LgFunctions.obj)' ou sur 'C:\Users\douaille\Spotlight\Debug\vc100.pdb' ; l'objet sera lié sans informations de débogage
+     1>libGina0.2.lib(LgGenerator.obj) : warning LNK4099: PDB 'vc100.pdb' n'a pu être trouvé avec 'libGina0.2.lib(LgGenerator.obj)' ou sur 'C:\Users\douaille\Spotlight\Debug\vc100.pdb' ; l'objet sera lié sans informations de débogage
+     1>libGina0.2.lib(LgEnvironment.obj) : warning LNK4099: PDB 'vc100.pdb' n'a pu être trouvé avec 'libGina0.2.lib(LgEnvironment.obj)' ou sur 'C:\Users\douaille\Spotlight\Debug\vc100.pdb' ; l'objet sera lié sans informations de débogage
+     1>libGina0.2.lib(LgMetaData.obj) : warning LNK4099: PDB 'vc100.pdb' n'a pu être trouvé avec 'libGina0.2.lib(LgMetaData.obj)' ou sur 'C:\Users\douaille\Spotlight\Debug\vc100.pdb' ; l'objet sera lié sans informations de débogage
+     1>libGina0.2.lib(LgObserver.obj) : warning LNK4099: PDB 'vc100.pdb' n'a pu être trouvé avec 'libGina0.2.lib(LgObserver.obj)' ou sur 'C:\Users\douaille\Spotlight\Debug\vc100.pdb' ; l'objet sera lié sans informations de débogage
+     1>libGina0.2.lib(LgNode.obj) : warning LNK4099: PDB 'vc100.pdb' n'a pu être trouvé avec 'libGina0.2.lib(LgNode.obj)' ou sur 'C:\Users\douaille\Spotlight\Debug\vc100.pdb' ; l'objet sera lié sans informations de débogage
+     1>libGina0.2.lib(LgSwitch.obj) : warning LNK4099: PDB 'vc100.pdb' n'a pu être trouvé avec 'libGina0.2.lib(LgSwitch.obj)' ou sur 'C:\Users\douaille\Spotlight\Debug\vc100.pdb' ; l'objet sera lié sans informations de débogage
+     1>libGina0.2.lib(LgTimer.obj) : warning LNK4099: PDB 'vc100.pdb' n'a pu être trouvé avec 'libGina0.2.lib(LgTimer.obj)' ou sur 'C:\Users\douaille\Spotlight\Debug\vc100.pdb' ; l'objet sera lié sans informations de débogage
          ErwannHanae.vcxproj -> C:\Users\douaille\Spotlight\Debug\ErwannHanae.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"C:\Users\douaille\Spotlight\Debug\ErwannHanae.exe;#1" /manifest Debug\ErwannHanae.exe.intermediate.manifest
        FinalizeBuildStatus:
          Suppression du fichier "Debug\ErwannHanae.unsuccessfulbuild".
          Mise à jour de l'horodatage "Debug\ErwannHanae.lastbuildstate".
@@ -14,4 +36,4 @@
 
 La génération a réussi.
 
-Temps écoulé 00:00:00.05
+Temps écoulé 00:00:03.27

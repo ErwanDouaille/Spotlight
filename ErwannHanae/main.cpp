@@ -11,6 +11,7 @@
 #include "MonoUserFilter.h"
 #include "OSCSender.h"
 #include "SpotlightProcessor.h"
+#include "DataTranslatorKinect.h"
 
 using namespace std;
 
@@ -22,6 +23,7 @@ struct pos_t{
 Environment* myEnv;
 KinectGenerator* gt;
 SpotlightProcessor* sp;
+DataTranslatorKinect* translator;
 MonoUserFilter* mf;
 PoseObserver* po;
 OSCSender* osc;
@@ -39,44 +41,38 @@ int main(int argc, char* argv[])
 
 	
 	gt = new KinectGenerator("KinectTest"); 
-	gt->useCameraElevation();
+	//gt->useCameraElevation();
 	gt->setCameraPosition(0,100,0);
 	if(myEnv->registerNode(gt))
 		printf("Register Kinect OK.\n");
 	else
 		printf("%s.\n",myEnv->getLastError().c_str());
+
+	mf = new MonoUserFilter("MonoUserFilter"); 
+	mf->setThres(0.9f);
+	mf->enableDoing(true);
+	po = new PoseObserver("PoseObserver",LG_ORIENTEDPOINT3D_NECK);
+	po->setThreshold(200);
+	//mf->setObserver(po);
 	
 
-
+	translator = new DataTranslatorKinect("DataTranslatorKinect"); 
+	if(myEnv->registerNode(translator))
+		printf("Register DataTranslatorKinect Processor OK.\n");
+	else
+		printf("%s.\n",myEnv->getLastError().c_str());
 
 	sp = new SpotlightProcessor("SpotlightProcessor"); 
 	if(myEnv->registerNode(sp))
 		printf("Register Spotlight Processor OK.\n");
 	else
 		printf("%s.\n",myEnv->getLastError().c_str());
-	
-
-
-
-
-	mf = new MonoUserFilter("MonoUserFilter"); 
-	mf->setThres(0.9f);
-
-	mf->enableDoing(true);
-
-	po = new PoseObserver("PoseObserver",LG_ORIENTEDPOINT3D_NECK);
-	po->setThreshold(200);
-	mf->setObserver(po);
-
 
 	/*if(myEnv->registerNode(mf))
 		printf("Register MonoUser OK.\n");
 	else
 		printf("%s.\n",myEnv->getLastError().c_str());
 		*/
-
-	// TODO ajouter le Processor de pointage 
-
 
 	osc = new OSCSender("OSCSender");
 	osc->addClient("127.0.0.1","3335");
@@ -85,7 +81,7 @@ int main(int argc, char* argv[])
 	//osc->onlyObservePointType(LG_ORIENTEDPOINT3D_HEAD);
 	//osc->onlyObservePointType(LG_ORIENTEDPOINT3D_LEFT_HAND);
 	//osc->onlyObservePointType(LG_ORIENTEDPOINT3D_RIGHT_HAND);
-	myEnv->registerNode(mf);
+	myEnv->registerNode(osc);
 
 	
 	if(myEnv->checkCompatibility())
