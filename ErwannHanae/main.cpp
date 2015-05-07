@@ -77,8 +77,10 @@ int main(int argc, char* argv[])
 	osc = new OSCSender("OSCSender");
 	osc->addClient("127.0.0.1","3335");
 	// Ex pour ne regarder que la tête, les mains et un group POINTING
-	//osc->onlyObserveGroupType("POINTING");
-	//osc->onlyObservePointType(LG_ORIENTEDPOINT3D_HEAD);
+	osc->onlyObserveGroupType("TRANSLATE");
+	//osc->onlyObserveGroupType("RAYCAST");
+	//osc->onlyObservePointType("RAYCAST");
+	//osc->onlyObservePointType("TRANSLATE_HEAD");
 	//osc->onlyObservePointType(LG_ORIENTEDPOINT3D_LEFT_HAND);
 	//osc->onlyObservePointType(LG_ORIENTEDPOINT3D_RIGHT_HAND);
 	myEnv->registerNode(osc);

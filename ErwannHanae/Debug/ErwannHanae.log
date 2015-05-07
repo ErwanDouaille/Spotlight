@@ -1,13 +1,14 @@
-﻿La génération a démarré 06/05/2015 15:47:00.
+﻿La génération a démarré 07/05/2015 17:01:40.
      1>Projet "C:\Users\douaille\Spotlight\ErwannHanae\ErwannHanae.vcxproj" sur le nœud 2 (build cible(s)).
      1>InitializeBuildStatus:
          Création de "Debug\ErwannHanae.unsuccessfulbuild", car "AlwaysCreate" a été spécifié.
        ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I../include /I"C:\Program Files\Microsoft SDKs\Kinect\Developer Toolkit v1.8.0\inc" /I"C:\Program Files\Microsoft SDKs\Kinect\v1.8\inc" /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt DataTranslatorKinect.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I../include /I"C:\Program Files\Microsoft SDKs\Kinect\Developer Toolkit v1.8.0\inc" /I"C:\Program Files\Microsoft SDKs\Kinect\v1.8\inc" /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt DataTranslatorKinect.cpp OSCSender.cpp
+         OSCSender.cpp
          DataTranslatorKinect.cpp
+     1>c:\users\douaille\spotlight\erwannhanae\datatranslatorkinect.cpp(72): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
      1>c:\users\douaille\spotlight\erwannhanae\datatranslatorkinect.cpp(73): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
-     1>c:\users\douaille\spotlight\erwannhanae\datatranslatorkinect.cpp(78): warning C4244: 'argument' : conversion de 'double' en 'const float', perte possible de données
-     1>c:\users\douaille\spotlight\erwannhanae\datatranslatorkinect.cpp(78): warning C4244: 'argument' : conversion de 'double' en 'const float', perte possible de données
+         Génération de code en cours...
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\douaille\Spotlight\Debug\ErwannHanae.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:"C:\Program Files\Microsoft SDKs\Kinect\Developer Toolkit v1.8.0\Lib\x86" /LIBPATH:../lib /LIBPATH:"C:\Program Files\Microsoft SDKs\Kinect\v1.8\lib\x86" libGina0.2.lib pthreadVC2.lib liblo.lib winmm.lib wsock32.lib kinect10.lib ws2_32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\ErwannHanae.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\douaille\Spotlight\Debug\ErwannHanae.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\douaille\Spotlight\Debug\ErwannHanae.lib" /MACHINE:X86 Debug\DataTranslatorKinect.obj
          Debug\main.obj
@@ -36,4 +37,4 @@
 
 La génération a réussi.
 
-Temps écoulé 00:00:03.27
+Temps écoulé 00:00:04.33

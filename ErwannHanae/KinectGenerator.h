@@ -10,8 +10,7 @@
 #include <NuiApi.h>
 #include <NuiImageCamera.h>
 #include <NuiSensor.h>
-#include <string.h>
-#include <math.h>
+#include <string.h> 
 
 using namespace lg;
 
@@ -34,6 +33,21 @@ struct LgImage{
 	// RGB IR ...
 };
 
+/*!
+	* \class KinectGenerator
+	* \brief Generator for connecting Microsoft Kinect through Microsoft Kinect SDK
+	*
+	* Generate millimeters
+	*
+	*
+	* For using it : 
+	* include C:\Program Files\Microsoft SDKs\Kinect\v1.8\inc
+	* lib directory : C:\Program Files\Microsoft SDKs\Kinect\v1.8\lib\x86
+	* lib : Kinect10.lib
+	*
+	*
+	*
+*/
 class KinectGenerator : public Generator
 {
 
@@ -55,6 +69,12 @@ private:
 	
 	//! Rotation on the Z axis to add to the data (orientation of the camera)
 	float _yaw;
+
+	//! Number of frames to wait before deleting a user which doesn't appear in consecutive frames
+	int _deleteUserFrameCount;
+
+	//! Time (in ms) to wait a new frame
+	int _waitTime;
 
 	//! Define if the data are retrieved from a Kinect or a file
 	string _inputMode;
@@ -92,15 +112,19 @@ private:
 	//! Frequency of updates
 	int _frequency;
 
-	//! Enable the use of the motor elevation
-	bool _useElevation;
-
 	/*!
 	* \brief Rotate and translate the point according to stored data
 	* \param[in] Point3D : point3D in Kinect coordinates
 	* \return a Point3D in global coordinates
 	*/
 	Point3D getRepositionedPoint(Point3D);
+
+	/*!
+	* \brief Convert a quaternion in a Vector4 to a Orientation3D
+	* \param[in] Vector4 : quaternion 
+	* \return orientation3D en radians
+	*/
+	Orientation3D convertOrientationsToEuler(Vector4);
 
 
 public:
@@ -182,11 +206,7 @@ public:
 	* \param[in] yaw : rotations on the Z axis
 	*/
 	void setCameraOrientation(float pitch, float roll, float yaw) {_pitch = pitch;_roll = roll;_yaw = yaw;}
-	
-	/*!
-	* \brief Store the camera elevation in the roll data
-	*/
-	void useCameraElevation() ;
+
 
 	/*!
 	* \brief Get the applied rotation on the X axis (pitch)
@@ -356,5 +376,29 @@ public:
 	* \return The update frequency
 	*/
 	int getFrequency() {return _frequency;}
+
+	/*!
+	* \brief Set the time to wait for a new frame from the Kinect
+	* \param[in] newWaitTime : time to wait in milliseconds
+	*/
+	void setWaitingTime(int newWaitTime) {_waitTime = newWaitTime;}
+	
+	/*!
+	* \brief Get the time to wait for a new frame from the Kinect
+	* \return time to wait in milliseconds
+	*/
+	int getWaitingTime() {return _waitTime;}
+
+	/*!
+	* \brief Set the number of consecutives frame to wait before deleting a user that doesn't appear on it
+	* \param[in] newFrameCount : Number of consecutives frame to wait before deleting a user that doesn't appear on it 
+	*/
+	void setDeleteUserFrameCount(int newFrameCount) {_deleteUserFrameCount = newFrameCount;}
+	
+	/*!
+	* \brief Get the number of consecutives frame to wait before deleting a user that doesn't appear on it
+	* \return Number of consecutives frame to wait before deleting a user that doesn't appear on it 
+	*/
+	int getDeleteUserFrameCount() {return _deleteUserFrameCount;}
 
 };

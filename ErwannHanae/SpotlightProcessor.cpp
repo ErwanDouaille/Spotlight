@@ -59,9 +59,8 @@ bool SpotlightProcessor::update(map<string,Group3D*>& g3D, map<string,Group2D*>&
 {
 
 	for(map<string,Group3D*>::iterator mit = g3D.begin();mit != g3D.end();mit++){
-		//cout << " 3D Groups " << mit->first.c_str() << endl;
-		set<HOrientedPoint3D*> rhand = mit->second->getElementsByType("TRANSLATE_HEAD");
-		set<HOrientedPoint3D*> head = mit->second->getElementsByType("TRANSLATE_RIGHT_HAND");
+		set<HOrientedPoint3D*> head = mit->second->getElementsByType("TRANSLATE_HEAD");
+		set<HOrientedPoint3D*> rhand = mit->second->getElementsByType("TRANSLATE_RIGHT_HAND");
 
 		if(rhand.size() > 0  && head.size() > 0 ) {
 			HOrientedPoint3D* rh = *rhand.begin();
@@ -78,7 +77,7 @@ bool SpotlightProcessor::update(map<string,Group3D*>& g3D, map<string,Group2D*>&
 
 				cout << "x:" << rhp->getPosition().getX() << "y:" << rhp->getPosition().getY() << "z:" << rhp->getPosition().getZ() << endl;
 				_raycastIntersection = this->raycastVector();
-				updateData(_environment,g2D, "RAYCAST","RAYCAST","_raycastIntersection","RAYCAST",_timestamp,OrientedPoint2D(Point2D(_raycastIntersection->x(),_raycastIntersection->y()),0.0,1.0,0.0));
+				updateData(_environment,g2D, "RAYCAST","RAYCAST","_raycastIntersection","RAYCAST",_timestamp,OrientedPoint2D(Point2D(_raycastIntersection->x(),_raycastIntersection->y()),0.0,1.0,rhp->getPosition().getZ()*20));
 			}
 		}
 	}

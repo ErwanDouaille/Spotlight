@@ -47,7 +47,6 @@ set<string> DataTranslatorKinect::produce() const
 
 bool DataTranslatorKinect::update(map<string,Group3D*>& g3D, map<string,Group2D*>& g2D, map<string,Group1D*>& g1D, map<string,GroupSwitch*>& groupsSwitch)
 {
-
 	for(map<string,Group3D*>::iterator mit = g3D.begin();mit != g3D.end();mit++){
 		set<HOrientedPoint3D*> rhand = mit->second->getElementsByType(LG_ORIENTEDPOINT3D_RIGHT_HAND);
 		set<HOrientedPoint3D*> head = mit->second->getElementsByType(LG_ORIENTEDPOINT3D_HEAD);
@@ -58,10 +57,10 @@ bool DataTranslatorKinect::update(map<string,Group3D*>& g3D, map<string,Group2D*
 			if(h && rh){
 				OrientedPoint3D* rhp = rh->getLast();
 				OrientedPoint3D* hp = h->getLast();	
-				cout << "x:" << rhp->getPosition().getX() << "y:" << rhp->getPosition().getY() << "z:" << rhp->getPosition().getZ() << endl;
-
 				updateData(_environment, g3D,"translateGroup", "TRANSLATE", "head", "TRANSLATE_HEAD", _timestamp,this->translateKinectData(hp));
 				updateData(_environment, g3D,"translateGroup", "TRANSLATE", "right_hand", "TRANSLATE_RIGHT_HAND", _timestamp,this->translateKinectData(rhp));
+				//cout << "x: " << hp->getOrientation().getX() << " \ty: " << hp->getOrientation().getY() << "\tz:" << hp->getOrientation().getZ() << endl;
+			
 			}
 		}
 	}
@@ -70,13 +69,10 @@ bool DataTranslatorKinect::update(map<string,Group3D*>& g3D, map<string,Group2D*
 
 OrientedPoint3D DataTranslatorKinect::translateKinectData(OrientedPoint3D* point) 
 {
-	float transformX = abs(((point->getPosition().getX()+1100)/2200)-1.);
-	float transformY = 0.0;
+	float transformX = 1 - abs(((point->getPosition().getX()+1100)/2200)-1.);
+	float transformY = point->getPosition().getY()/2000.;
 	float transformZ = abs((point->getPosition().getZ()-800)/3200);
-	Eigen::Vector3f a = Eigen::Vector3f(point->getPosition().getX(),
-					point->getPosition().getY()* cos(-22./180.*3.14)-point->getPosition().getZ()*sin(-22/180.*3.14),
-					point->getPosition().getY()* sin(-22./180.*3.14) + point->getPosition().getZ()* cos(-22./180.*3.14));
-	transformY = (a.y()+1100)/1200;
+	//cout << "\t ici " <<		point->getOrientation().getX() << endl;
 	return OrientedPoint3D(Point3D(transformX, transformY, transformZ), 
 		point->getOrientation(),
 		0.0,
