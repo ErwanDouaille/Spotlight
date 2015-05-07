@@ -12,6 +12,7 @@
 #include "OSCSender.h"
 #include "SpotlightProcessor.h"
 #include "DataTranslatorKinect.h"
+#include "MouseController.h"
 
 using namespace std;
 
@@ -26,6 +27,7 @@ SpotlightProcessor* sp;
 DataTranslatorKinect* translator;
 MonoUserFilter* mf;
 PoseObserver* po;
+MouseController* mouseController;
 OSCSender* osc;
 vector<pos_t> _pos;
 
@@ -73,6 +75,12 @@ int main(int argc, char* argv[])
 	else
 		printf("%s.\n",myEnv->getLastError().c_str());
 		*/
+
+	mouseController = new MouseController("MouseController");
+	if(myEnv->registerNode(mouseController))
+		printf("Register mouseController OK.\n");
+	else
+		printf("%s.\n",myEnv->getLastError().c_str());
 
 	osc = new OSCSender("OSCSender");
 	osc->addClient("127.0.0.1","3335");

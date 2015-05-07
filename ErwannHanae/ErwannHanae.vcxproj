@@ -56,7 +56,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Program Files\Microsoft SDKs\Kinect\Developer Toolkit v1.8.0\Lib\x86;../lib;C:\Program Files\Microsoft SDKs\Kinect\v1.8\lib\x86</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libGina0.2.lib;pthreadVC2.lib;liblo.lib;winmm.lib;wsock32.lib;kinect10.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libGina0.2.lib;pthreadVC2.lib;liblo.lib;winmm.lib;wsock32.lib;kinect10.lib;ws2_32.lib;User32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -83,6 +83,7 @@
     <ClInclude Include="DataTranslatorKinect.h" />
     <ClInclude Include="KinectGenerator.h" />
     <ClInclude Include="MonoUserFilter.h" />
+    <ClInclude Include="MouseController.h" />
     <ClInclude Include="OSCSender.h" />
     <ClInclude Include="PoseObserver.h" />
     <ClInclude Include="SpotlightProcessor.h" />
@@ -92,6 +93,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="KinectGenerator.cpp" />
     <ClCompile Include="MonoUserFilter.cpp" />
+    <ClCompile Include="MouseController.cpp" />
     <ClCompile Include="OSCSender.cpp" />
     <ClCompile Include="PoseObserver.cpp" />
     <ClCompile Include="SpotlightProcessor.cpp" />

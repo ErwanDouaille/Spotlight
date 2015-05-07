@@ -57,6 +57,7 @@ bool DataTranslatorKinect::update(map<string,Group3D*>& g3D, map<string,Group2D*
 			if(h && rh){
 				OrientedPoint3D* rhp = rh->getLast();
 				OrientedPoint3D* hp = h->getLast();	
+
 				updateData(_environment, g3D,"translateGroup", "TRANSLATE", "head", "TRANSLATE_HEAD", _timestamp,this->translateKinectData(hp));
 				updateData(_environment, g3D,"translateGroup", "TRANSLATE", "right_hand", "TRANSLATE_RIGHT_HAND", _timestamp,this->translateKinectData(rhp));
 				//cout << "x: " << hp->getOrientation().getX() << " \ty: " << hp->getOrientation().getY() << "\tz:" << hp->getOrientation().getZ() << endl;
