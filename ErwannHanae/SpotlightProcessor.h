@@ -15,9 +15,8 @@ protected:
 	Eigen::Vector3f* _orientationUser;
 	Eigen::Vector3f* _screenNormal;
 	Eigen::Vector3f* _screenOrigin;
-	Eigen::Vector3f* _raycastIntersection;
 
-	Eigen::Vector3f* raycastVector();
+	lg::Point2D raycastVector();
 
 public:
 	SpotlightProcessor(string);
@@ -32,7 +31,6 @@ public:
 	set<string> need() const; 
 	set<string> consume() const; 
 	set<string> produce() const;
-	const Eigen::Vector3f getRaycastIntersection() { return *_raycastIntersection;}
 
 };
 

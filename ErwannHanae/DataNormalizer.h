@@ -3,14 +3,14 @@
 #include "LgProcessor.h"
 #include "Eigen\Geometry"
 
-class DataTranslatorKinect : public lg::Processor
+class DataNormalizer : public lg::Processor
 {
 protected:
-	lg::OrientedPoint3D translateKinectData(lg::OrientedPoint3D*);
+	lg::OrientedPoint3D normalizeData(lg::OrientedPoint3D*);
 
 public:
-	DataTranslatorKinect(string);
-	~DataTranslatorKinect(void);
+	DataNormalizer(string);
+	~DataNormalizer(void);
 	
 	Node* clone(string name) const;
 

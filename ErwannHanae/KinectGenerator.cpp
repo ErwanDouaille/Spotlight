@@ -60,7 +60,6 @@ Node* KinectGenerator::clone(string cloneName) const
 	return (Node*)this;
 }
 
-
 bool KinectGenerator::start()
 {
 	if(!_environment){
@@ -73,7 +72,6 @@ bool KinectGenerator::start()
 	WaitForSingleObject(h_skeleton, INFINITE);
 	return true;
 }
-
 
 bool KinectGenerator::initKinect() {
 
@@ -202,7 +200,8 @@ bool KinectGenerator::generate(map<string,Group3D*>& g3D,map<string,Group2D*>& g
 				// HEAD
 				jointPos = SkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_HEAD];
 				orientation = boneOrientations[NUI_SKELETON_POSITION_HEAD];
-				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_HEAD))) updateData(_environment,g3D,myID,_3DGroupType ,"head",LG_ORIENTEDPOINT3D_HEAD,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),convertOrientationsToEuler(orientation.absoluteRotation.rotationQuaternion),1.0,0.0));
+				if(_3DMode&&(isGenerated(LG_ORIENTEDPOINT3D_HEAD))) 
+					updateData(_environment,g3D,myID,_3DGroupType ,"head",LG_ORIENTEDPOINT3D_HEAD,_timestamp,OrientedPoint3D(getRepositionedPoint(Point3D(1000.0f*jointPos.x,1000.0f*jointPos.y,1000.0f*jointPos.z)),convertOrientationsToEuler(orientation.absoluteRotation.rotationQuaternion),1.0,0.0));
 				if(_2DMode&&(isGenerated("LG_ORIENTEDPOINT2D_HEAD"))){
 					NuiTransformSkeletonToDepthImage(jointPos,&fx, &fy,&fz);
 					updateData(_environment,g2D,myID,"KINECTV1_MICROSOFTSDK1.8_SKELETON_PROJECTION","head","LG_ORIENTEDPOINT2D_HEAD",_timestamp,OrientedPoint2D(Point2D((int) (fx*2 ) / videoWidth,(int) (fy*2 )/ videoHeight),0.0,0.0,0.0));
@@ -635,7 +634,6 @@ KinectGenerator::~KinectGenerator(void)
 {
 }
 
-
 Point3D KinectGenerator::getRepositionedPoint(Point3D old){
 	Point3D newPos;
 
@@ -646,7 +644,6 @@ Point3D KinectGenerator::getRepositionedPoint(Point3D old){
 
 	return newPos;
 }
-
 
 Orientation3D KinectGenerator::convertOrientationsToEuler(Vector4 q1){
 

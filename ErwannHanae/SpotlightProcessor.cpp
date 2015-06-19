@@ -76,22 +76,20 @@ bool SpotlightProcessor::update(map<string,Group3D*>& g3D, map<string,Group2D*>&
 				_orientationUser->normalize();
 
 				//cout << "x:" << rhp->getPosition().getX() << "y:" << rhp->getPosition().getY() << "z:" << rhp->getPosition().getZ() << endl;
-				_raycastIntersection = this->raycastVector();
-				updateData(_environment,g2D, "RAYCAST","RAYCAST","_raycastIntersection","RAYCAST",_timestamp,OrientedPoint2D(Point2D(_raycastIntersection->x(),_raycastIntersection->y()),0.0,1.0,rhp->getPosition().getZ()*20));
+				updateData(_environment,g2D, "RAYCAST","RAYCAST","_raycastIntersection","RAYCAST",_timestamp,OrientedPoint2D(this->raycastVector(),0.0,1.0,rhp->getPosition().getZ()*20));
 			}
 		}
 	}
 	return true;
 }
 
-Eigen::Vector3f* SpotlightProcessor::raycastVector()
+Point2D SpotlightProcessor::raycastVector()
 {
 	float T =0.0, d = 0.0;
 	d = -((*_screenNormal).dot(*_screenOrigin));
 	T = -((*_screenNormal).dot((*_posUser))+d)/((*_screenNormal).dot(*_ray));
 
-	return new Vector3f(_posUser->x() + _ray->x()*T,
-		_posUser->y() + _ray->y()*T,
-		_posUser->z() + _ray->z()*T);
+	return Point2D(_posUser->x() + _ray->x()*T,
+		_posUser->y() + _ray->y()*T);
 }
 

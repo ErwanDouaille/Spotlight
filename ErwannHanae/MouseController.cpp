@@ -47,13 +47,14 @@ bool MouseController::observe( map<string,Group3D*> groups3D,map<string,Group2D*
 					INPUT ip = {0};
 
 					ip.type = INPUT_MOUSE;
-					ip.mi.dx = long(1-raycastPointP->getPosition().getX() * 65535 - 1);
+					ip.mi.dx = long(raycastPointP->getPosition().getX() * 65535 - 1);
 					ip.mi.dy = long((1-raycastPointP->getPosition().getY()) * 65535 - 1);
 					ip.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE;
 
 					SendInput(1, &ip, sizeof(INPUT));
 
 					// Draw circle
+					/*
 					HDC hdc;
 					SIZE s;
 					s.cx = ::GetSystemMetrics(SM_CXSCREEN);
@@ -87,6 +88,7 @@ bool MouseController::observe( map<string,Group3D*> groups3D,map<string,Group2D*
 					::ReleaseDC(NULL, hdc);
 
 					cout << "x : " << horizontal << " y: " << vertical << endl;
+					*/
 				}
 			}
 		}

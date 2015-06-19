@@ -50,13 +50,14 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../include;C:\Program Files\Microsoft SDKs\Kinect\Developer Toolkit v1.8.0\inc;C:\Program Files\Microsoft SDKs\Kinect\v1.8\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../include;C:\Program Files\Microsoft SDKs\Kinect\Developer Toolkit v1.8.0\inc;C:\Users\douaille\Desktop\vrpn;C:\Program Files\Microsoft SDKs\Kinect\v1.8\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Program Files\Microsoft SDKs\Kinect\Developer Toolkit v1.8.0\Lib\x86;../lib;C:\Program Files\Microsoft SDKs\Kinect\v1.8\lib\x86</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libGina0.2.lib;pthreadVC2.lib;liblo.lib;winmm.lib;wsock32.lib;kinect10.lib;ws2_32.lib;User32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files\Microsoft SDKs\Kinect\Developer Toolkit v1.8.0\Lib\x86;../lib;C:\Users\douaille\Desktop\vrpn\pc_win32\DLL\Debug;C:\Program Files\Microsoft SDKs\Kinect\v1.8\lib\x86</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vrpndll.lib;ws2_32.lib;winmm.lib;wsock32.lib;libGina0.2.lib;pthreadVC2.lib;liblo.lib;kinect10.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>MSVCRT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -68,28 +69,33 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../include;C:\Program Files\Microsoft SDKs\Kinect\Developer Toolkit v1.8.0\inc;C:\Program Files\Microsoft SDKs\Kinect\v1.8\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>C:\Program Files\Microsoft SDKs\Kinect\Developer Toolkit v1.8.0\Lib\x86;../lib;C:\Program Files\Microsoft SDKs\Kinect\v1.8\lib\x86</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;wsock32.lib;libGina0.2.lib;pthreadVC2.lib;liblo.lib;kinect10.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DataTranslatorKinect.h" />
+    <ClInclude Include="DataNormalizer.h" />
     <ClInclude Include="KinectGenerator.h" />
     <ClInclude Include="MonoUserFilter.h" />
     <ClInclude Include="MouseController.h" />
     <ClInclude Include="OSCSender.h" />
     <ClInclude Include="PoseObserver.h" />
     <ClInclude Include="SpotlightProcessor.h" />
+    <ClInclude Include="UDPSender.h" />
+    <ClInclude Include="VRPNGenerator.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DataTranslatorKinect.cpp" />
+    <ClCompile Include="DataNormalizer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="KinectGenerator.cpp" />
     <ClCompile Include="MonoUserFilter.cpp" />
@@ -97,6 +103,8 @@
     <ClCompile Include="OSCSender.cpp" />
     <ClCompile Include="PoseObserver.cpp" />
     <ClCompile Include="SpotlightProcessor.cpp" />
+    <ClCompile Include="UDPSender.cpp" />
+    <ClCompile Include="VRPNGenerator.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

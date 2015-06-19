@@ -1,31 +1,27 @@
-#include "OSCSender.h"
+#include "UDPSender.h"
 
-
-OSCSender::OSCSender(string name) : Observer(name)
+UDPSender::UDPSender(string name) : Observer(name)
 {
 }
 
-
-OSCSender::~OSCSender(void)
-{
-	
+UDPSender::~UDPSender(void)
+{	
 }
 
-
-Node* OSCSender::clone(string name) const{
+Node* UDPSender::clone(string name) const{
 	return 0;
 }
 
-bool OSCSender::start(){
+bool UDPSender::start(){
 	return true;
 }
 
-bool OSCSender::stop(){
+bool UDPSender::stop(){
 	return true;
 }
 
-bool OSCSender::observe(map<string,Group3D*> groups3D,map<string,Group2D*> groups2D, map<string,Group1D*> groups1D, map<string,GroupSwitch*> groupsSwitch){
-
+bool UDPSender::observe(map<string,Group3D*> groups3D,map<string,Group2D*> groups2D, map<string,Group1D*> groups1D, map<string,GroupSwitch*> groupsSwitch){
+	/*
 	// Parcours groups 3D
 	for(map<string,Group3D*>::iterator git = groups3D.begin();git != groups3D.end();git++){
 		// Check if group must be observed
@@ -41,7 +37,7 @@ bool OSCSender::observe(map<string,Group3D*> groups3D,map<string,Group2D*> group
 						if(ho3D->getLastTimestamp() == _timestamp){
 							OrientedPoint3D* o3D = ho3D->getLast();
 							if(_environment->getVerboseLevel() != LG_ENV_VERBOSE_MUTE)
-								printf("OSC Sender - Send %i - %s %s : %s %s [%f;%f;%f] [%f;%f;%f] %f %f\n",_environment->getTime(), git->first.c_str(),git->second->getType().c_str(),pit->first.c_str(),pit->second->getType().c_str(),o3D->getPosition().getX(),o3D->getPosition().getY(),o3D->getPosition().getZ(),o3D->getOrientation().getX(),o3D->getOrientation().getY(),o3D->getOrientation().getZ(),o3D->getConfidence(),o3D->getIntensity() ); 
+								printf("UDP Sender - Send %i - %s %s : %s %s [%f;%f;%f] [%f;%f;%f] %f %f\n",_environment->getTime(), git->first.c_str(),git->second->getType().c_str(),pit->first.c_str(),pit->second->getType().c_str(),o3D->getPosition().getX(),o3D->getPosition().getY(),o3D->getPosition().getZ(),o3D->getOrientation().getX(),o3D->getOrientation().getY(),o3D->getOrientation().getZ(),o3D->getConfidence(),o3D->getIntensity() ); 
 							// Send /3D time groupID groupType pointID pointType posX posY posZ oriX oriY oriZ confidence intensity
 							for(set<lo_address>::iterator cit = _clients.begin();cit != _clients.end();cit++){
 								if(_environment->getVerboseLevel() == LG_ENV_VERBOSE_HIGH)
@@ -137,10 +133,6 @@ bool OSCSender::observe(map<string,Group3D*> groups3D,map<string,Group2D*> group
 
 
 	
-
+	*/
 	return true;
-}
-
-void OSCSender::addClient(string address,string port){
-	_clients.insert(lo_address_new(address.c_str(), port.c_str()));
 }

@@ -6,13 +6,15 @@
 #include <vector>
 
 #include "LgEnvironment.h"
+
+#include "DataNormalizer.h"
 #include "KinectGenerator.h"
-#include "PoseObserver.h"
 #include "MonoUserFilter.h"
-#include "OSCSender.h"
-#include "SpotlightProcessor.h"
-#include "DataTranslatorKinect.h"
 #include "MouseController.h"
+#include "OSCSender.h"
+#include "PoseObserver.h"
+#include "SpotlightProcessor.h"
+#include "VRPNGenerator.h"
 
 using namespace std;
 
@@ -23,8 +25,9 @@ struct pos_t{
 
 Environment* myEnv;
 KinectGenerator* gt;
+VRPNGenerator* vrpn;
 SpotlightProcessor* sp;
-DataTranslatorKinect* translator;
+DataNormalizer* normalizer;
 MonoUserFilter* mf;
 PoseObserver* po;
 MouseController* mouseController;
@@ -36,17 +39,33 @@ int main(int argc, char* argv[])
 
 	myEnv = new Environment();
 	myEnv->enableDataCopy(false);
+	myEnv->setHistoricLength(1);
 	//myEnv->setVerboseLevel(LG_ENV_VERBOSE_NORMAL);
 
 	// Historic length is the number of successive value to keep -> default is 10, reduce it to 2 or 3 can be time efficient
 	//myEnv->setHistoricLength(3);
 
-	
+	// KINECT
+	/*
 	gt = new KinectGenerator("KinectTest"); 
 	//gt->useCameraElevation();
 	gt->setCameraPosition(0,100,0);
 	if(myEnv->registerNode(gt))
 		printf("Register Kinect OK.\n");
+	else
+		printf("%s.\n",myEnv->getLastError().c_str());
+	*/
+
+	//VRPN 
+	vrpn = new VRPNGenerator("Optitracker"); 
+	if(myEnv->registerNode(vrpn))
+		printf("Register Optitracker OK.\n");
+	else
+		printf("%s.\n",myEnv->getLastError().c_str());
+
+	normalizer = new DataNormalizer("DataTranslatorVRPN"); 
+	if(myEnv->registerNode(normalizer))
+		printf("Register Normalizer Processor OK.\n");
 	else
 		printf("%s.\n",myEnv->getLastError().c_str());
 
@@ -57,13 +76,6 @@ int main(int argc, char* argv[])
 	po->setThreshold(200);
 	//mf->setObserver(po);
 	
-
-	translator = new DataTranslatorKinect("DataTranslatorKinect"); 
-	if(myEnv->registerNode(translator))
-		printf("Register DataTranslatorKinect Processor OK.\n");
-	else
-		printf("%s.\n",myEnv->getLastError().c_str());
-
 	sp = new SpotlightProcessor("SpotlightProcessor"); 
 	if(myEnv->registerNode(sp))
 		printf("Register Spotlight Processor OK.\n");
@@ -74,13 +86,13 @@ int main(int argc, char* argv[])
 		printf("Register MonoUser OK.\n");
 	else
 		printf("%s.\n",myEnv->getLastError().c_str());
-		*/
-
+		
 	mouseController = new MouseController("MouseController");
 	if(myEnv->registerNode(mouseController))
 		printf("Register mouseController OK.\n");
 	else
 		printf("%s.\n",myEnv->getLastError().c_str());
+	*/
 
 	osc = new OSCSender("OSCSender");
 	osc->addClient("127.0.0.1","3335");
@@ -93,7 +105,6 @@ int main(int argc, char* argv[])
 	//osc->onlyObservePointType(LG_ORIENTEDPOINT3D_RIGHT_HAND);
 	myEnv->registerNode(osc);
 
-	
 	if(myEnv->checkCompatibility())
 		printf("Compatibility OK.\n");
 	else{
@@ -109,30 +120,9 @@ int main(int argc, char* argv[])
 	}
 
 
-	while(true){
-	
+	while(true){	
 		myEnv->update();
-
-		map<string,Group3D*> g3 = myEnv->getGroups3D();
-
-		//printf("%i groups present\n",g2.size());
-
-		if(g3.size() > 0)
-			printf("1 group present at %i\n",myEnv->getTime());
-
-		//printf("Time %i\n",myEnv->getTime());
-
-		/*for(map<string,Group2D*>::iterator git = g2.begin();git != g2.end();git++){
-			map<string,HOrientedPoint2D*> elements = git->second->getAll();
-			printf("\tgroup %s has %i elements\n",git->first.c_str(),elements.size());
-			for(map<string,HOrientedPoint2D*>::iterator eit = elements.begin();eit != elements.end();eit++){
-				pos_t onePos;
-				onePos.x = eit->second->getLast()->getPosition().getX();
-				onePos.y = eit->second->getLast()->getPosition().getY();
-				_pos.push_back(onePos);
-			}
-		}*/
-	
+		map<string,Group3D*> g3 = myEnv->getGroups3D();	
 	}
 
 
