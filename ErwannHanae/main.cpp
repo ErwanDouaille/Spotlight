@@ -12,6 +12,7 @@
 #include "MonoUserFilter.h"
 #include "MouseController.h"
 #include "OSCSender.h"
+#include "UDPSender.h"
 #include "PoseObserver.h"
 #include "SpotlightProcessor.h"
 #include "VRPNGenerator.h"
@@ -32,6 +33,7 @@ MonoUserFilter* mf;
 PoseObserver* po;
 MouseController* mouseController;
 OSCSender* osc;
+UDPSender* udp;
 vector<pos_t> _pos;
 
 int main(int argc, char* argv[])
@@ -93,9 +95,9 @@ int main(int argc, char* argv[])
 	else
 		printf("%s.\n",myEnv->getLastError().c_str());
 	*/
-
+	
 	osc = new OSCSender("OSCSender");
-	osc->addClient("127.0.0.1","3335");
+	osc->addClient("127.0.0.1", "3335");
 	// Ex pour ne regarder que la tête, les mains et un group POINTING
 	osc->onlyObserveGroupType("TRANSLATE");
 	//osc->onlyObserveGroupType("RAYCAST");
@@ -104,6 +106,16 @@ int main(int argc, char* argv[])
 	//osc->onlyObservePointType(LG_ORIENTEDPOINT3D_LEFT_HAND);
 	//osc->onlyObservePointType(LG_ORIENTEDPOINT3D_RIGHT_HAND);
 	myEnv->registerNode(osc);
+
+	udp = new UDPSender("UDPSender", "134.206.16.44", 2021);
+	// Ex pour ne regarder que la tête, les mains et un group POINTING
+	udp->onlyObserveGroupType("TRANSLATE");
+	//osc->onlyObserveGroupType("RAYCAST");
+	//osc->onlyObservePointType("RAYCAST");
+	//osc->onlyObservePointType("TRANSLATE_HEAD");
+	//osc->onlyObservePointType(LG_ORIENTEDPOINT3D_LEFT_HAND);
+	//osc->onlyObservePointType(LG_ORIENTEDPOINT3D_RIGHT_HAND);
+	myEnv->registerNode(udp);
 
 	if(myEnv->checkCompatibility())
 		printf("Compatibility OK.\n");
@@ -119,12 +131,9 @@ int main(int argc, char* argv[])
 		printf("%s.\n",myEnv->getLastError().c_str());
 	}
 
-
 	while(true){	
 		myEnv->update();
-		map<string,Group3D*> g3 = myEnv->getGroups3D();	
 	}
-
 
 	return 0;
 }

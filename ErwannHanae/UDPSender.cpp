@@ -1,7 +1,10 @@
 #include "UDPSender.h"
 
-UDPSender::UDPSender(string name) : Observer(name)
+UDPSender::UDPSender(string name, char* ip, int port) : Observer(name)
 {
+	this->slen = sizeof(si_other);
+	this->ip = ip;
+	this->port = port;
 }
 
 UDPSender::~UDPSender(void)
@@ -13,6 +16,20 @@ Node* UDPSender::clone(string name) const{
 }
 
 bool UDPSender::start(){
+	if (WSAStartup(MAKEWORD(2,2),&wsa) != 0) {
+		printf("Failed. Error Code : %d",WSAGetLastError());
+		return false;
+	}
+
+	if ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == SOCKET_ERROR) {
+		printf("socket() failed with error code : %d" , WSAGetLastError());
+		return false;
+	}
+	memset((char *) &si_other, 0, sizeof(si_other));
+	si_other.sin_family = AF_INET;
+	si_other.sin_port = htons(port);
+	si_other.sin_addr.S_un.S_addr = inet_addr(ip);
+	cout << port << endl;
 	return true;
 }
 
@@ -20,8 +37,8 @@ bool UDPSender::stop(){
 	return true;
 }
 
-bool UDPSender::observe(map<string,Group3D*> groups3D,map<string,Group2D*> groups2D, map<string,Group1D*> groups1D, map<string,GroupSwitch*> groupsSwitch){
-	/*
+bool UDPSender::observe(map<string,Group3D*> groups3D,map<string,Group2D*> groups2D, map<string,Group1D*> groups1D, map<string,GroupSwitch*> groupsSwitch) {
+	std::stringstream ss;
 	// Parcours groups 3D
 	for(map<string,Group3D*>::iterator git = groups3D.begin();git != groups3D.end();git++){
 		// Check if group must be observed
@@ -38,20 +55,14 @@ bool UDPSender::observe(map<string,Group3D*> groups3D,map<string,Group2D*> group
 							OrientedPoint3D* o3D = ho3D->getLast();
 							if(_environment->getVerboseLevel() != LG_ENV_VERBOSE_MUTE)
 								printf("UDP Sender - Send %i - %s %s : %s %s [%f;%f;%f] [%f;%f;%f] %f %f\n",_environment->getTime(), git->first.c_str(),git->second->getType().c_str(),pit->first.c_str(),pit->second->getType().c_str(),o3D->getPosition().getX(),o3D->getPosition().getY(),o3D->getPosition().getZ(),o3D->getOrientation().getX(),o3D->getOrientation().getY(),o3D->getOrientation().getZ(),o3D->getConfidence(),o3D->getIntensity() ); 
-							// Send /3D time groupID groupType pointID pointType posX posY posZ oriX oriY oriZ confidence intensity
-							for(set<lo_address>::iterator cit = _clients.begin();cit != _clients.end();cit++){
-								if(_environment->getVerboseLevel() == LG_ENV_VERBOSE_HIGH)
-									printf("\t Send To %s: %s\n", lo_address_get_hostname(*cit), lo_address_get_port(*cit)); 
-								if (lo_send(*cit, "/3D", "issssffffffff" ,_environment->getTime(), git->first.c_str(),git->second->getType().c_str(),pit->first.c_str(),pit->second->getType().c_str(),o3D->getPosition().getX(),o3D->getPosition().getY(),o3D->getPosition().getZ(),o3D->getOrientation().getX(),o3D->getOrientation().getY(),o3D->getOrientation().getZ(),o3D->getConfidence(),o3D->getIntensity()) == -1) 
-									printf("OSC error %d: %s\n", lo_address_errno(*cit), lo_address_errstr(*cit));
-							}
+							ss << "id" << pit->first.c_str() << ":" << o3D->getPosition().getX() << ":" << o3D->getPosition().getY() << ":" << o3D->getPosition().getZ();
 						}
 					}
 				}
 			}
 		}
 	}
-
+	/*
 		// Parcours groups 2D
 	for(map<string,Group2D*>::iterator git = groups2D.begin();git != groups2D.end();git++){
 		// Check if group must be observed
@@ -75,64 +86,12 @@ bool UDPSender::observe(map<string,Group3D*> groups3D,map<string,Group2D*> group
 				}
 			}
 		}
-	}
-
-		// Parcours groups 1D
-	for(map<string,Group1D*>::iterator git = groups1D.begin();git != groups1D.end();git++){
-		// Check if group must be observed
-		if(isObservedGroup(git->first,git->second->getType())){
-			// Parcours points
-			map<string,HOrientedPoint1D*> hops1D = git->second->getAll();
-			for(map<string,HOrientedPoint1D*>::iterator pit = hops1D.begin();pit != hops1D.end();pit++){
-				// Check if they must be observed
-				if(isObservedType(pit->second->getType())){
-					// Check if they are up to date
-					HOrientedPoint1D* ho1D = pit->second;
-					if(ho1D){
-						if(ho1D->getLastTimestamp() == _timestamp){
-							OrientedPoint1D* o1D = ho1D->getLast();
-							// Send /1D time groupID groupType pointID pointType pos ori confidence intensity
-							for(set<lo_address>::iterator cit = _clients.begin();cit != _clients.end();cit++)
-								if (lo_send(*cit, "/1D", "issssfbff" ,_environment->getTime(), git->first.c_str(),git->second->getType().c_str(),pit->first.c_str(),pit->second->getType().c_str(),o1D->getPosition(),o1D->getOrientation(),o1D->getConfidence(),o1D->getIntensity()) == -1) 
-									printf("OSC error %d: %s\n", lo_address_errno(*cit), lo_address_errstr(*cit));
-						}
-					}
-				}
-			}
-		}
-	}
-
-
-		// Parcours groups Switch
-	for(map<string,GroupSwitch*>::iterator git = groupsSwitch.begin();git != groupsSwitch.end();git++){
-		// Check if group must be observed
-		if(isObservedGroup(git->first,git->second->getType())){
-			// Parcours points
-			map<string,HSwitch*> hss = git->second->getAll();
-			for(map<string,HSwitch*>::iterator pit = hss.begin();pit != hss.end();pit++){
-				// Check if they must be observed
-				if(isObservedType(pit->second->getType())){
-					// Check if they are up to date
-					HSwitch* hs = pit->second;
-					if(hs){
-						if(hs->getLastTimestamp() == _timestamp){
-							Switch* s = hs->getLast();
-							// Send /S time groupID groupType pointID pointType state
-							for(set<lo_address>::iterator cit = _clients.begin();cit != _clients.end();cit++)
-								if (lo_send(*cit, "/S", "issssb" ,_environment->getTime(), git->first.c_str(),git->second->getType().c_str(),pit->first.c_str(),pit->second->getType().c_str(),s->getState()) == -1) 
-									printf("OSC error %d: %s\n", lo_address_errno(*cit), lo_address_errstr(*cit));
-						}
-					}
-				}
-			}
-		}
-	}
-
-	
-
-
-
-	
+	}	
 	*/
+	strcpy(message, ss.str().c_str());
+	if (sendto(s, message, strlen(message) , 0 , (struct sockaddr *) &si_other, slen) == SOCKET_ERROR) {
+		printf("sendto() failed with error code : %d\n" , WSAGetLastError());
+		return false;
+	}
 	return true;
 }
